@@ -8,7 +8,9 @@ const userDataPath = path.join(
 const getUsers = (req, res) => {
   getFileData(userDataPath, res)
     .then((users) => res.send(users))
-    .catch((err) => res.status(400).send(err));
+    .catch(() => {
+      res.status(500).send({ Message: 'Internal Error' });
+    });
 };
 
 const getUserById = (req, res) => {
