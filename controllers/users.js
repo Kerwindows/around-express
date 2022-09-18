@@ -19,6 +19,9 @@ const getUserById = (req, res) => {
         return res.send(user);
       }
       return res.status(404).send({ Message: 'User ID not found' });
+    })
+    .catch(() => {
+      res.status(500).send({ Message: 'Internal Error' });
     });
 };
 

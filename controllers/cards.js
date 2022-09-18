@@ -5,6 +5,8 @@ const cardDataPath = path.join(__dirname, '../', 'data', 'cards.json');
 
 const getCards = (req, res) => getFileData(cardDataPath, res)
   .then((cards) => res.send(cards))
-  .catch((err) => res.status(404).send(err));
+  .catch(() => {
+    res.status(500).send({ Message: 'Internal Error' });
+  });
 
 module.exports = getCards;
