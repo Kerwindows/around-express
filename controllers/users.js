@@ -1,30 +1,68 @@
-const path = require('path');
-const getFileData = require('../helpers/files');
-
-const userDataPath = path.join(
-  path.join(__dirname, '../', 'data', 'users.json'),
-);
+const User = require('../models/user');
 
 const getUsers = (req, res) => {
-  getFileData(userDataPath, res)
+  User.find({})
+    .orFail()
     .then((users) => res.send(users))
-    .catch(() => {
-      res.status(500).send({ Message: 'Internal Error' });
-    });
+    .catch((err) => res.status(400).send(err));
 };
 
 const getUserById = (req, res) => {
-  getFileData(userDataPath, res)
-    .then((users) => users.find((user) => user._id === req.params.id))
-    .then((user) => {
-      if (user) {
-        return res.send(user);
+  User.findById(req.params.id)
+    .orFail()
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: 'No User with that ID found' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Invalid data request' });
       }
-      return res.status(404).send({ Message: 'User ID not found' });
-    })
-    .catch(() => {
-      res.status(500).send({ Message: 'Internal Error' });
     });
 };
 
-module.exports = { getUsers, getUserById };
+const createUser = (req, res) => {
+  const { name, about, avatar } = req.body;
+  User.create({ name, about, avatar })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Invalid user data' });
+      }
+    });
+};
+
+const updateProfile = (req, res) => {
+  const { name, about } = req.body;
+
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
+    .orFail()
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Invalid user data' });
+      }
+    });
+};
+
+const updateAvatar = (req, res) => {
+  const { avatar } = req.body;
+  User.findOneAndUpdate(req.user._id, avatar, {
+    new: true,
+    runValidators: true,
+  })
+    .orFail()
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Invalid user data' });
+      }
+    });
+};
+
+module.exports = {
+  getUsers,
+  getUserById,
+  createUser,
+  updateProfile,
+  updateAvatar,
+};

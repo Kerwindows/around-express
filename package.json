@@ -2,16 +2,17 @@
   "name": "express-server",
   "version": "1.0.0",
   "description": "My first express server",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "nodemon app.js",
+    "start": "node app.js",
     "lint": "eslint --fix --ext .js,.jsx ."
   },
   "author": "Kerwin",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.1"
+    "express": "^4.18.1",
+    "mongoose": "^6.6.3"
   },
   "devDependencies": {
     "eslint": "^8.23.1",
