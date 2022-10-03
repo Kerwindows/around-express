@@ -12,12 +12,14 @@ const getCards = (req, res) => {
 };
 
 const createCard = (req, res) => {
+  // eslint-disable-next-line no-console
+  console.log("Owner_id:",req.user._id); 
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Please submit a name and valid URL' });
+        res.status(400).send({ message: 'Please submit a name and a valid URL' });
       }
     });
 };
@@ -37,9 +39,7 @@ const deleteCard = (req, res) => {
 
 const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
-    { new: true },
+    req.params.cardId,{ likes: req.user._id }
   )
     .orFail()
     .then((cardData) => res.send({ data: cardData }))
@@ -54,9 +54,7 @@ const likeCard = (req, res) => {
 
 const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: req.user._id } }, // remove _id from the array
-    { new: true },
+    req.params.cardId,{ likes: req.user._id }
   )
     .orFail()
     .then((cardData) => res.send({ data: cardData }))

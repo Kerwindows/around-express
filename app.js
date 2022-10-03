@@ -9,10 +9,10 @@ const usersRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 
 const { PORT = 3000 } = process.env;
-// app.listen(PORT = 3000, () => {
-//   // eslint-disable-next-line no-console
-//   console.log('Server is Running');
-// });
+app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log('Server is Running');
+});
 
 app.use((req, res, next) => {
   req.user = {
@@ -28,4 +28,4 @@ app.use((req, res) => {
   res.status(404).send({ message: 'Requested resource not found' });
 });
 
-app.listen(PORT);
+
