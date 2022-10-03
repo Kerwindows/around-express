@@ -2,13 +2,11 @@
 
 ## Directories
 
-`/data` — JSON files to temporarily emulate database integration.
-
 `/routes` — routing files.
 
 `/contollers` — contoller files.
 
-`/helpers` — read file function.
+`/models` — set schemas.
 
 ## Running the Project
 
