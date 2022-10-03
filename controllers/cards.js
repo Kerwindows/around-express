@@ -1,4 +1,9 @@
 const Card = require('../models/card');
+const {
+  HTTP_CLIENT_ERROR_NOT_FOUND,
+  HTTP_CLIENT_BAD_REQUEST,
+  SERVERSIDE_ERROR,
+} = require('../utils/utils');
 
 const getCards = (req, res) => {
   Card.find({})
@@ -6,20 +11,22 @@ const getCards = (req, res) => {
     .then((cardData) => {
       res.send(cardData); // skipped, because an error was thrown
     })
-    .catch((err) => {
-      res.status(404).send(err);
+    .catch(() => {
+      res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
     });
 };
 
 const createCard = (req, res) => {
-  // eslint-disable-next-line no-console
-  console.log("Owner_id:",req.user._id); 
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Please submit a name and a valid URL' });
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'Please submit a name and a valid URL' });
+      } else {
+        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
       }
     });
 };
@@ -28,41 +35,63 @@ const deleteCard = (req, res) => {
   Card.findByIdAndRemove({ _id: req.params.cardId })
     .orFail()
     .then((cardData) => res.send({ data: cardData }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: 'No card with that ID found' });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Invalid data request' });
+    .catch((error) => {
+      if (error.name === 'DocumentNotFoundError') {
+        res
+          .status(HTTP_CLIENT_ERROR_NOT_FOUND)
+          .send({ message: 'No card with that ID found' });
+      } else if (error.name === 'CastError') {
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'Invalid data request' });
+      } else {
+        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
       }
     });
 };
 
 const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
-    req.params.cardId,{ likes: req.user._id }
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
   )
     .orFail()
     .then((cardData) => res.send({ data: cardData }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: 'No card with that ID found' });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Invalid data request' });
+    .catch((error) => {
+      if (error.name === 'DocumentNotFoundError') {
+        res
+          .status(HTTP_CLIENT_ERROR_NOT_FOUND)
+          .send({ message: 'No card with that ID found' });
+      } else if (error.name === 'CastError') {
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'Invalid data request' });
+      } else {
+        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
       }
     });
 };
 
 const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
-    req.params.cardId,{ likes: req.user._id }
+    req.params.cardId,
+    { $pull: { likes: req.user._id } }, // remove _id from the array
+    { new: true },
   )
     .orFail()
     .then((cardData) => res.send({ data: cardData }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: 'No card with that ID found' });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Invalid data request' });
+    .catch((error) => {
+      if (error.name === 'DocumentNotFoundError') {
+        res
+          .status(HTTP_CLIENT_ERROR_NOT_FOUND)
+          .send({ message: 'No card with that ID found' });
+      } else if (error.name === 'CastError') {
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'Invalid data request' });
+      } else {
+        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
       }
     });
 };

@@ -27,5 +27,3 @@ app.use('/cards', cardRouter);
 app.use((req, res) => {
   res.status(404).send({ message: 'Requested resource not found' });
 });
-
-

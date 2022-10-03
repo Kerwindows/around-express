@@ -1,21 +1,34 @@
 const User = require('../models/user');
+const {
+  HTTP_CLIENT_ERROR_NOT_FOUND,
+  HTTP_CLIENT_BAD_REQUEST,
+  SERVERSIDE_ERROR,
+} = require('../utils/utils');
 
 const getUsers = (req, res) => {
   User.find({})
     .orFail()
     .then((users) => res.send(users))
-    .catch((err) => res.status(400).send(err));
+    .catch((err) => res.status(HTTP_CLIENT_BAD_REQUEST).send(err));
 };
 
 const getUserById = (req, res) => {
   User.findById(req.params.id)
     .orFail()
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: 'No User with that ID found' });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Invalid data request' });
+    .then((user) => {
+      res.status(200).send({ data: user });
+    })
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'invalid user id' });
+      } else if (error.name === 'DocumentNotFoundError') {
+        res
+          .status(HTTP_CLIENT_ERROR_NOT_FOUND)
+          .send({ message: `no user found with id ${req.params.id}` });
+      } else {
+        res.status(SERVERSIDE_ERROR).send({ message: 'internal server error' });
       }
     });
 };
@@ -26,7 +39,11 @@ const createUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Invalid user data' });
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'Invalid user data' });
+      } else {
+        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
       }
     });
 };
@@ -34,12 +51,21 @@ const createUser = (req, res) => {
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    { new: true },
+    { runValidators: true },
+  )
     .orFail()
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Invalid user data' });
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'Invalid user data' });
+      } else {
+        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
       }
     });
 };
@@ -54,7 +80,11 @@ const updateAvatar = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Invalid user data' });
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'Invalid user data' });
+      } else {
+        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
       }
     });
 };
