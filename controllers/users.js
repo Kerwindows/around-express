@@ -9,7 +9,7 @@ const getUsers = (req, res) => {
   User.find({})
     .orFail()
     .then((users) => res.send(users))
-    .catch((err) => res.status(HTTP_CLIENT_BAD_REQUEST).send(err));
+    .catch((error) => res.status(HTTP_CLIENT_BAD_REQUEST).send(error));
 };
 
 const getUserById = (req, res) => {
@@ -37,13 +37,13 @@ const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
         res
           .status(HTTP_CLIENT_BAD_REQUEST)
-          .send({ message: 'Invalid user data' });
+          .send({ message: 'invalid user data' });
       } else {
-        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
+        res.status(SERVERSIDE_ERROR).send({ Message: 'internal error' });
       }
     });
 };
@@ -54,18 +54,25 @@ const updateProfile = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { new: true },
-    { runValidators: true },
+    { new: true, runValidators: true },
   )
     .orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
         res
           .status(HTTP_CLIENT_BAD_REQUEST)
-          .send({ message: 'Invalid user data' });
+          .send({ message: 'invalid user data' });
+      } else if (error.name === 'CastError') {
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'invalid user id' });
+      } else if (error.name === 'DocumentNotFoundError') {
+        res
+          .status(HTTP_CLIENT_ERROR_NOT_FOUND)
+          .send({ message: `no user found with id ${req.params.id}` });
       } else {
-        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
+        res.status(SERVERSIDE_ERROR).send({ Message: 'internal error' });
       }
     });
 };
@@ -78,11 +85,19 @@ const updateAvatar = (req, res) => {
   })
     .orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
         res
           .status(HTTP_CLIENT_BAD_REQUEST)
-          .send({ message: 'Invalid user data' });
+          .send({ message: 'invalid user data' });
+      } else if (error.name === 'CastError') {
+        res
+          .status(HTTP_CLIENT_BAD_REQUEST)
+          .send({ message: 'invalid user id' });
+      } else if (error.name === 'DocumentNotFoundError') {
+        res
+          .status(HTTP_CLIENT_ERROR_NOT_FOUND)
+          .send({ message: `no user found with id ${req.params.id}` });
       } else {
         res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
       }

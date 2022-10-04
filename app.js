@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { HTTP_CLIENT_ERROR_NOT_FOUND } = require('./utils/utils');
 
 const app = express();
 mongoose.connect('mongodb://localhost:27017/aroundb');
@@ -25,5 +26,7 @@ app.use('/users', usersRouter);
 app.use('/cards', cardRouter);
 
 app.use((req, res) => {
-  res.status(404).send({ message: 'Requested resource not found' });
+  res
+    .status(HTTP_CLIENT_ERROR_NOT_FOUND)
+    .send({ message: 'Requested resource not found' });
 });

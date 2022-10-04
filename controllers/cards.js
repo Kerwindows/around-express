@@ -12,7 +12,7 @@ const getCards = (req, res) => {
       res.send(cardData); // skipped, because an error was thrown
     })
     .catch(() => {
-      res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
+      res.status(SERVERSIDE_ERROR).send({ Message: 'internal error' });
     });
 };
 
@@ -24,9 +24,9 @@ const createCard = (req, res) => {
       if (error.name === 'ValidationError') {
         res
           .status(HTTP_CLIENT_BAD_REQUEST)
-          .send({ message: 'Please submit a name and a valid URL' });
+          .send({ message: 'please submit a name and a valid URL' });
       } else {
-        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
+        res.status(SERVERSIDE_ERROR).send({ Message: 'internal error' });
       }
     });
 };
@@ -39,13 +39,13 @@ const deleteCard = (req, res) => {
       if (error.name === 'DocumentNotFoundError') {
         res
           .status(HTTP_CLIENT_ERROR_NOT_FOUND)
-          .send({ message: 'No card with that ID found' });
+          .send({ message: 'no card with that id found' });
       } else if (error.name === 'CastError') {
         res
           .status(HTTP_CLIENT_BAD_REQUEST)
-          .send({ message: 'Invalid data request' });
+          .send({ message: 'invalid data request' });
       } else {
-        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
+        res.status(SERVERSIDE_ERROR).send({ Message: 'internal error' });
       }
     });
 };
@@ -62,13 +62,13 @@ const likeCard = (req, res) => {
       if (error.name === 'DocumentNotFoundError') {
         res
           .status(HTTP_CLIENT_ERROR_NOT_FOUND)
-          .send({ message: 'No card with that ID found' });
+          .send({ message: 'no card with that id found' });
       } else if (error.name === 'CastError') {
         res
           .status(HTTP_CLIENT_BAD_REQUEST)
-          .send({ message: 'Invalid data request' });
+          .send({ message: 'invalid data request' });
       } else {
-        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
+        res.status(SERVERSIDE_ERROR).send({ Message: 'internal error' });
       }
     });
 };
@@ -85,13 +85,13 @@ const dislikeCard = (req, res) => {
       if (error.name === 'DocumentNotFoundError') {
         res
           .status(HTTP_CLIENT_ERROR_NOT_FOUND)
-          .send({ message: 'No card with that ID found' });
+          .send({ message: 'no card with that id found' });
       } else if (error.name === 'CastError') {
         res
           .status(HTTP_CLIENT_BAD_REQUEST)
-          .send({ message: 'Invalid data request' });
+          .send({ message: 'invalid data request' });
       } else {
-        res.status(SERVERSIDE_ERROR).send({ Message: 'Internal Error' });
+        res.status(SERVERSIDE_ERROR).send({ Message: 'internal error' });
       }
     });
 };
