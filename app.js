@@ -8,8 +8,9 @@ const {
 } = require("./utils/utils");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
-app.use(helmet());
 const app = express();
+
+app.use(helmet());
 
 mongoose.connect("mongodb://localhost:27017/aroundb");
 app.use(express.json());
