@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const helmet = require("helmet");
 const { celebrate, Joi, errors } = require("celebrate");
 const {
   HTTP_CLIENT_ERROR_NOT_FOUND,
@@ -7,7 +8,9 @@ const {
 } = require("./utils/utils");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
+app.use(helmet());
 const app = express();
+
 mongoose.connect("mongodb://localhost:27017/aroundb");
 app.use(express.json());
 
