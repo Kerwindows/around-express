@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const { celebrate, Joi, errors } = require("celebrate");
 const {
   HTTP_CLIENT_ERROR_NOT_FOUND,
   SERVERSIDE_ERROR,
@@ -11,6 +12,8 @@ app.use(express.json());
 
 const usersRouter = require("./routes/users");
 const cardRouter = require("./routes/cards");
+
+app.use(errors());
 
 app.use((err, req, res, next) => {
   // if an error has no status, display 500
