@@ -49,6 +49,7 @@ const cardRouter = require('./routes/cards');
 app.use('/users', usersRouter);
 app.use('/cards', cardRouter);
 
+
 app.use((req, res, next) => {
   next(new NotFoundError('Not found'));
 });
@@ -56,7 +57,7 @@ app.use((req, res, next) => {
 app.use(errorLogger);
 app.use(errors());
 
-app.use(errorHandler); // add errorHandler here
+app.use(errorHandler);
 
 const { PORT = 3000 } = process.env;
 app.listen(PORT, () => {
