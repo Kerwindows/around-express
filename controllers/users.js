@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
+const { NotFoundError } = require('../middleware/errors/bad-request');
+const { Conflict } = require('../middleware/errors/conflict');
+const { BadRequestError } = require('../middleware/errors/bad-request');
+const { Unauthorized } = require('../middleware/errors/unauthorized');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -12,24 +16,22 @@ const getCurrentUser = (req, res, next) => {
       }
       return res.status(200).send(user);
     })
-    .catch(next);
+    .catch((error) => next(error));
 };
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(next);
+    .catch((error) => next(error));
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail()
+    .orFail(() => new NotFoundError("That card doesn't exist"))
     .then((user) => {
       res.send({ data: user });
     })
-    .catch(() => {
-      next(error);
-    });
+    .catch((error) => next(error));
 };
 
 const createUser = (req, res, next) => {
@@ -37,7 +39,12 @@ const createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   User.findOne({ email })
-    .then((user) => {
+  // eslint-disable-next-line
+    .then((existingUser) => {
+      if (existingUser) {
+        return next(new Conflict('User with that email already exists'));
+      }
+      // eslint-disable-next-line
       bcrypt.hash(password, 10, (err, hash) => {
         if (err) {
           return next(err);
@@ -58,25 +65,23 @@ const createUser = (req, res, next) => {
               _id: user._id,
             },
           }))
-          .catch((err) => {
-            if (err.name === 'ValidationError') {
-              next(
+          .catch((error) => {
+            if (error.name === 'ValidationError') {
+              return next(
                 new BadRequestError(
-                  `${Object.values(err.errors)
-                    .map((error) => error.message)
+                  `${Object.values(error.errors)
+                    .map((validationError) => validationError.message)
                     .join(', ')}`,
                 ),
               );
-            } else {
-              next(err);
             }
+            return next(error);
           });
       });
     })
-    .catch(next);
+    .catch((error) => next(error));
 };
-
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(
@@ -84,14 +89,18 @@ const updateProfile = (req, res) => {
     { name, about },
     { new: true, runValidators: true },
   )
-    .orFail()
+    .orFail(() => new NotFoundError('User not found'))
     .then((user) => res.send(user))
-    .catch(() => {
-      next(error);
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        next(new BadRequestError('Invalid data'));
+      } else {
+        next(error);
+      }
     });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findOneAndUpdate(
     { _id: req.user._id },
@@ -101,10 +110,14 @@ const updateAvatar = (req, res) => {
       runValidators: true,
     },
   )
-    .orFail(() => new NotFoundError('That card doesn\'t exist'))
+    .orFail(() => new NotFoundError('User with that ID not found'))
     .then((user) => res.send(user))
-    .catch(() => {
-      next(error);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Invalid data'));
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -119,8 +132,8 @@ const login = (req, res, next) => {
       );
       res.send({ token });
     })
-    .catch(() => {
-      next(error);
+    .catch((err) => {
+      next(new Unauthorized(err.message));
     });
 };
 
